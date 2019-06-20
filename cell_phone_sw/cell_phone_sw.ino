@@ -1,3 +1,4 @@
+
 /*
  SMS sender
 
@@ -20,10 +21,11 @@
 // Include the GSM library
 #include <MKRGSM.h>
 
-#include "arduino_secrets.h" 
+// #include "arduino_secrets.h" 
 // Please enter your sensitive data in the Secret tab or arduino_secrets.h
 // PIN Number
-const char PINNUMBER[] = SECRET_PINNUMBER;
+// const char PINNUMBER[] = SECRET_PINNUMBER;
+#define PINNUMBER ""
 
 // initialize the library instance
 GSM gsmAccess;
@@ -31,7 +33,7 @@ GSM_SMS sms;
 
 void setup() {
   // initialize serial communications and wait for port to open:
-  Serial.begin(9600);
+  Serial.begin(1200);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
