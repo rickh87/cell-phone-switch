@@ -78,7 +78,7 @@ void sendTxt(char txtMsg[]){
 
 void setup() {
   // initialize serial communications and wait for port to open:
-  Serial.begin(1200);
+  Serial.begin(9600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
@@ -91,8 +91,13 @@ void setup() {
   while (!connected) {
     if (gsmAccess.begin(PINNUMBER) == GSM_READY) {
       connected = true;
+        if (debug){
+           Serial.println("Cnnected");
+        }   
     } else {
-      Serial.println("Not connected");
+        if (debug){
+            Serial.println("Not connected");
+        }
       delay(1000);
     }
   }
@@ -106,7 +111,6 @@ void setup() {
 void loop() {
   int c;
   int i;
-
   // put your main code here, to run repeatedly:
   // check to see if the button is pressed
   if (digitalRead(BUTTON) == 0){
@@ -123,15 +127,31 @@ void loop() {
       digitalWrite(RELAY, LOW);
 //    txtMessage = txtMessage3 + txtMessage2;
       strcat(txtMessage, txtMessage3);
-      strcat(txtMessage, txtMessage1);
+      strcat(txtMessage, txtMessage2);
       sendTxt(txtMessage);
       }
   }  
    
   if (debug){
-      Serial.print("Now, enter SMS content: ");
+      Serial.print("Now enter test message content: ");
       readSerial(txtMessage);
       sendTxt(txtMessage);
+      if(FLAG == 0){
+         FLAG = 1;
+         digitalWrite(RELAY, HIGH);
+//       txtMessage = txtMessage3 + txtMessage1;
+         strcat(txtMessage, txtMessage3);
+         strcat(txtMessage, txtMessage1);
+         sendTxt(txtMessage);
+      }
+      else{
+         FLAG = 0;
+         digitalWrite(RELAY, LOW);
+//       txtMessage = txtMessage3 + txtMessage2;
+         strcat(txtMessage, txtMessage3);
+         strcat(txtMessage, txtMessage2);
+         sendTxt(txtMessage);
+      }
   }
   else{
       // If there are any SMSs available()
