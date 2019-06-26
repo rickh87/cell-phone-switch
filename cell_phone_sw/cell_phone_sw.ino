@@ -26,6 +26,13 @@
 // PIN Number
 // const char PINNUMBER[] = SECRET_PINNUMBER;
 #define PINNUMBER ""
+const char senderNumber[] = "6143163988\n";
+char remoteNum[20];  // telephone number to send sms
+char txtMsg[200];
+bool debug = true;
+char txtMessage1[] = "Relay is on";
+char txtMessage2[] = "Relay is off";
+char txtMessage3[] = "Front panel button pressed";
 
 // initialize the library instance
 GSM gsmAccess;
@@ -58,26 +65,69 @@ void setup() {
 }
 
 void loop() {
+  int c;
+  int i;
 
-  Serial.print("Enter a mobile number: ");
-  char remoteNum[20];  // telephone number to send sms
-  readSerial(remoteNum);
-  Serial.println(remoteNum);
+  // put your main code here, to run repeatedly:
+  // check to see if the button is pressed
+  if (digitalRead(BUTTON) == 0){
+    Serial.println("In button test loop");
+    sms.beginSMS(remoteNum);
+    if(FLAG == 0){
+       FLAG = 1;
+       digitalWrite(RELAY, HIGH);
+       Serial.println(txtMsg);
+       Serial.println(remoteNum);
+       sms.print(txtMsg);
+       }
+    else{
+      FLAG = 0;
+      digitalWrite(RELAY, LOW);
+      Serial.println(txtMsg);
+      sms.beginSMS(remoteNum);
+      sms.print(txtMsg);
+      }
+    sms.endSMS();
+    Serial.println("\nCOMPLETE!\n");
+  }   
+  // If there are any SMSs available()
+  if (sms.available()) {
+    Serial.println("Message received from:");
+    
+    // An example of message disposal
+    // Any messages starting with # should be discarded
+    if (sms.peek() == '#') {
+      Serial.println("Discarded SMS");
+      sms.flush();
+    }
 
-  // sms text
-  Serial.print("Now, enter SMS content: ");
-  char txtMsg[200];
-  readSerial(txtMsg);
-  Serial.println("SENDING");
-  Serial.println();
-  Serial.println("Message:");
-  Serial.println(txtMsg);
+    // Read message bytes and print them
+    while ((c = sms.read()) != -1) {
+      Serial.print((char)c);
+    }
+    
+    Serial.println(" ");
+    if(FLAG == 0){
+       FLAG = 1;
+       digitalWrite(RELAY, HIGH);    
+       Serial.println(txt1);
+       sendTxt(txt1);
+       }
+    else{
+       FLAG = 0;
+       digitalWrite(RELAY, LOW);
+       Serial.println(txt2);
+       sendTxt(txt2);
+       }
 
-  // send the message
-  sms.beginSMS(remoteNum);
-  sms.print(txtMsg);
-  sms.endSMS();
-  Serial.println("\nCOMPLETE!\n");
+    Serial.println("\nEND OF MESSAGE");
+
+    // Delete message from modem memory
+    sms.flush();
+    Serial.println("MESSAGE DELETED");
+  }
+  delay(1000);
+}
 }
 
 /*
@@ -99,4 +149,13 @@ int readSerial(char result[]) {
       }
     }
   }
+}
+
+void sendTxt(char txtMsg[]){
+   Serial.println(txtMsg);
+   if(degbug){
+      sms.beginSMS(senderNumber);
+      sms.print(txtMsg);
+      sms.endSMS();
+   } 
 }
