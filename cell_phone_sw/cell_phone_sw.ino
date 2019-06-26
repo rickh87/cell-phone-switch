@@ -20,24 +20,61 @@
 
 // Include the GSM library
 #include <MKRGSM.h>
+#include <string.h>
 
 // #include "arduino_secrets.h" 
 // Please enter your sensitive data in the Secret tab or arduino_secrets.h
-// PIN Number
+// PIN Number: NOTE: the Ting SIM card does not have a PIN number
 // const char PINNUMBER[] = SECRET_PINNUMBER;
 #define PINNUMBER ""
 const char senderNumber[] = "6143163988\n";
 char remoteNum[20];  // telephone number to send sms
 char txtMsg[200];
 bool debug = true;
-char txtMessage[] = "";
+char txtMessage[200] = {};
 char txtMessage1[] = "Relay is on.";
 char txtMessage2[] = "Relay is off.";
 char txtMessage3[] = "Front panel button pressed. ";
 
+int BUTTON = 0;
+int RELAY = 1;
+int FLAG = 0;
+
 // initialize the library instance
 GSM gsmAccess;
 GSM_SMS sms;
+
+/*
+  Read input serial
+ */
+int readSerial(char result[]) {
+  int i = 0;
+  while (1) {
+    while (Serial.available() > 0) {
+      char inChar = Serial.read();
+      if (inChar == '\n') {
+        result[i] = '\0';
+        Serial.flush();
+        return 0;
+      }
+      if (inChar != '\r') {
+        result[i] = inChar;
+        i++;
+      }
+    }
+  }
+}
+
+void sendTxt(char txtMsg[]){
+   if(debug){
+      Serial.println(txtMsg);
+   }
+   else{
+      sms.beginSMS(senderNumber);
+      sms.print(txtMsg);
+      sms.endSMS();
+   } 
+}
 
 void setup() {
   // initialize serial communications and wait for port to open:
@@ -61,6 +98,9 @@ void setup() {
   }
 
   Serial.println("GSM initialized");
+  pinMode(RELAY, OUTPUT);
+  pinMode(BUTTON, INPUT);
+  digitalWrite(RELAY, LOW);
 }
 
 void loop() {
@@ -74,13 +114,17 @@ void loop() {
     if(FLAG == 0){
        FLAG = 1;
        digitalWrite(RELAY, HIGH);
-       txtMessage = txtMessage3 + txtMessage1;
+//     txtMessage = txtMessage3 + txtMessage1;
+       strcat(txtMessage, txtMessage3);
+       strcat(txtMessage, txtMessage1);
        sendTxt(txtMessage);
     }
     else{
       FLAG = 0;
       digitalWrite(RELAY, LOW);
-      txtMessage = txtMessage3 + txtMessage2;
+//    txtMessage = txtMessage3 + txtMessage2;
+      strcat(txtMessage, txtMessage3);
+      strcat(txtMessage, txtMessage1);
       sendTxt(txtMessage);
       }
   }   
@@ -118,35 +162,4 @@ void loop() {
     sms.flush();
   }
   delay(1000);
-}
-}
-
-/*
-  Read input serial
- */
-int readSerial(char result[]) {
-  int i = 0;
-  while (1) {
-    while (Serial.available() > 0) {
-      char inChar = Serial.read();
-      if (inChar == '\n') {
-        result[i] = '\0';
-        Serial.flush();
-        return 0;
-      }
-      if (inChar != '\r') {
-        result[i] = inChar;
-        i++;
-      }
-    }
-  }
-}
-
-void sendTxt(char txtMsg[]){
-   Serial.println(txtMsg);
-   if(degbug){
-      sms.beginSMS(senderNumber);
-      sms.print(txtMsg);
-      sms.endSMS();
-   } 
 }
