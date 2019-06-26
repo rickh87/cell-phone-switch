@@ -110,7 +110,6 @@ void loop() {
   // put your main code here, to run repeatedly:
   // check to see if the button is pressed
   if (digitalRead(BUTTON) == 0){
-    Serial.println("In button test loop");
     if(FLAG == 0){
        FLAG = 1;
        digitalWrite(RELAY, HIGH);
@@ -127,17 +126,22 @@ void loop() {
       strcat(txtMessage, txtMessage1);
       sendTxt(txtMessage);
       }
-  }   
-  // If there are any SMSs available()
-  if (sms.available()) {
-    Serial.println("Message received from:");
-    
-    // An example of message disposal
-    // Any messages starting with # should be discarded
-    if (sms.peek() == '#') {
-      Serial.println("Discarded SMS");
-      sms.flush();
-    }
+  }  
+   
+  if (debug){
+      Serial.print("Now, enter SMS content: ");
+      readSerial(txtMessage);
+      sendTxt(txtMessage);
+  }
+  else{
+      // If there are any SMSs available()
+      if (sms.available()) {   
+      // An example of message disposal
+      // Any messages starting with # should be discarded
+      if (sms.peek() == '#') {
+         sms.flush();
+       }
+   }
 
     // Read message bytes and print them if in debug mode
     while ((c = sms.read()) != -1) {
@@ -146,7 +150,6 @@ void loop() {
       }
     }
     
-    Serial.println(" ");
     if(FLAG == 0){
        FLAG = 1;
        digitalWrite(RELAY, HIGH);    
