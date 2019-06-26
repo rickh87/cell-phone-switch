@@ -139,18 +139,12 @@ void loop() {
       if(FLAG == 0){
          FLAG = 1;
          digitalWrite(RELAY, HIGH);
-//       txtMessage = txtMessage3 + txtMessage1;
-         strcat(txtMessage, txtMessage3);
-         strcat(txtMessage, txtMessage1);
-         sendTxt(txtMessage);
+         sendTxt(txtMessage1);
       }
       else{
          FLAG = 0;
          digitalWrite(RELAY, LOW);
-//       txtMessage = txtMessage3 + txtMessage2;
-         strcat(txtMessage, txtMessage3);
-         strcat(txtMessage, txtMessage2);
-         sendTxt(txtMessage);
+         sendTxt(txtMessage2);
       }
   }
   else{
