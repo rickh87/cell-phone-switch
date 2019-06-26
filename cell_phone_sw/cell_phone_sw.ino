@@ -30,9 +30,10 @@ const char senderNumber[] = "6143163988\n";
 char remoteNum[20];  // telephone number to send sms
 char txtMsg[200];
 bool debug = true;
-char txtMessage1[] = "Relay is on";
-char txtMessage2[] = "Relay is off";
-char txtMessage3[] = "Front panel button pressed";
+char txtMessage[] = "";
+char txtMessage1[] = "Relay is on.";
+char txtMessage2[] = "Relay is off.";
+char txtMessage3[] = "Front panel button pressed. ";
 
 // initialize the library instance
 GSM gsmAccess;
@@ -44,8 +45,6 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-
-  Serial.println("SMS Messages Sender");
 
   // connection state
   bool connected = false;
@@ -72,23 +71,18 @@ void loop() {
   // check to see if the button is pressed
   if (digitalRead(BUTTON) == 0){
     Serial.println("In button test loop");
-    sms.beginSMS(remoteNum);
     if(FLAG == 0){
        FLAG = 1;
        digitalWrite(RELAY, HIGH);
-       Serial.println(txtMsg);
-       Serial.println(remoteNum);
-       sms.print(txtMsg);
-       }
+       txtMessage = txtMessage3 + txtMessage1;
+       sendTxt(txtMessage);
+    }
     else{
       FLAG = 0;
       digitalWrite(RELAY, LOW);
-      Serial.println(txtMsg);
-      sms.beginSMS(remoteNum);
-      sms.print(txtMsg);
+      txtMessage = txtMessage3 + txtMessage2;
+      sendTxt(txtMessage);
       }
-    sms.endSMS();
-    Serial.println("\nCOMPLETE!\n");
   }   
   // If there are any SMSs available()
   if (sms.available()) {
@@ -101,30 +95,27 @@ void loop() {
       sms.flush();
     }
 
-    // Read message bytes and print them
+    // Read message bytes and print them if in debug mode
     while ((c = sms.read()) != -1) {
-      Serial.print((char)c);
+      if(debug){
+         Serial.print((char)c);
+      }
     }
     
     Serial.println(" ");
     if(FLAG == 0){
        FLAG = 1;
        digitalWrite(RELAY, HIGH);    
-       Serial.println(txt1);
-       sendTxt(txt1);
+       sendTxt(txtMessage1);
        }
     else{
        FLAG = 0;
        digitalWrite(RELAY, LOW);
-       Serial.println(txt2);
-       sendTxt(txt2);
+       sendTxt(txtMessage2);
        }
-
-    Serial.println("\nEND OF MESSAGE");
 
     // Delete message from modem memory
     sms.flush();
-    Serial.println("MESSAGE DELETED");
   }
   delay(1000);
 }
