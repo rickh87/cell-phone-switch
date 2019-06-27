@@ -35,6 +35,9 @@ char txtMessage[200] = {};
 char txtMessage1[] = "Relay is on.";
 char txtMessage2[] = "Relay is off.";
 char txtMessage3[] = "Front panel button pressed. ";
+char txtMessage4[] = "Wrong PIN number DUMBASS!";
+char txtMessgae5[] = "Available commands are: T/t (toggle), N/n (on), F/f (off), S/s (status), H/h (Help)";
+char txtMessage6[] = " is not a recognized command, DIPSHIT!";
 
 int BUTTON = 0;
 int RELAY = 1;
@@ -164,17 +167,52 @@ void loop() {
       }
     }
     
-    if(FLAG == 0){
-       FLAG = 1;
-       digitalWrite(RELAY, HIGH);    
-       sendTxt(txtMessage1);
+    if (txtMessage[0..3] != "9536"){
+       sendTxt(txtMessage4)
        }
     else{
-       FLAG = 0;
-       digitalWrite(RELAY, LOW);
-       sendTxt(txtMessage2);
+       switch txtMessage[4]{
+          case ("T" || "t"): 
+             if(FLAG == 0){
+                FLAG = 1;
+                digitalWrite(RELAY, HIGH);    
+                sendTxt(txtMessage1);
+                break;
+                }
+             else{
+                FLAG = 0;
+                digitalWrite(RELAY, LOW);
+                sendTxt(txtMessage2);
+                break;
+                }
+          case ("N" || "n"):
+             FLAG = 1;
+             digitalWrite(RELAY, HIGH);    
+             sendTxt(txtMessage1);
+             break;
+          case ("F" || "f");
+             FLAG = 0;
+             digitalWrite(RELAY, LOW);
+             sendTxt(txtMessage2);
+             break;
+          case ("S" || "s") 
+            if(FLAG == 0){
+                 sendTxt(txtMessage2);
+                 }
+             else{
+                 sendTxt(txtMessage1);
+                 }
+             break;
+           case ("H" || "h" || || "?"):
+             sendTxt(txtMessage5);
+             break;
+           default:
+             strcat(txtMessage, txtMessage6);
+             sendTxt(txtMessage);
+             sendTxt(txtMessage5);
+             break;
        }
-
+     }
     // Delete message from modem memory
     sms.flush();
   }
