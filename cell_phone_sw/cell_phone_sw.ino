@@ -36,8 +36,12 @@ char txtMessage1[] = "Relay is on.";
 char txtMessage2[] = "Relay is off.";
 char txtMessage3[] = "Front panel button pressed. ";
 char txtMessage4[] = "Wrong PIN number DUMBASS!";
-char txtMessgae5[] = "Available commands are: T/t (toggle), N/n (on), F/f (off), S/s (status), H/h (Help)";
+char txtMessage5[] = "Available commands are: T/t (toggle), N/n (on), F/f (off), S/s (status), C/c (Change PIN), H/h (Help)";
 char txtMessage6[] = " is not a recognized command, DIPSHIT!";
+char txtMessage7[] = "PIN can only be changed by the Master";
+char txtMessage8[] = "Enter new 4 digit PIN";
+char txtMessage9[] = "Reenter 4 digit PIN";
+char txtMessage10[] = "PINs do not match. Go Away!";
 
 int BUTTON = 0;
 int RELAY = 1;
@@ -114,6 +118,7 @@ void setup() {
 void loop() {
   int c;
   int i;
+  int t;
   // put your main code here, to run repeatedly:
   // check to see if the button is pressed
   if (digitalRead(BUTTON) == 0){
@@ -167,35 +172,39 @@ void loop() {
       }
     }
     
-    if (txtMessage[0..3] != "9536"){
-       sendTxt(txtMessage4)
+    if ((txtMessage[0] != '9') || (txtMessage[1] != '5') || (txtMessage[2] != '3') || (txtMessage[3] != '6')){
+       sendTxt(txtMessage4);
        }
     else{
-       switch txtMessage[4]{
-          case ("T" || "t"): 
+       t = (int) txtMessage[4];
+       switch (t){
+//          case ('T' || 't'): 
+            case 'T':
              if(FLAG == 0){
                 FLAG = 1;
                 digitalWrite(RELAY, HIGH);    
                 sendTxt(txtMessage1);
-                break;
                 }
              else{
                 FLAG = 0;
                 digitalWrite(RELAY, LOW);
                 sendTxt(txtMessage2);
-                break;
                 }
-          case ("N" || "n"):
+             break;
+//          case ('N' || 'n'):
+            case 'N':
              FLAG = 1;
              digitalWrite(RELAY, HIGH);    
              sendTxt(txtMessage1);
              break;
-          case ("F" || "f");
+//          case ('F' || 'f');
+            case 'F':
              FLAG = 0;
              digitalWrite(RELAY, LOW);
              sendTxt(txtMessage2);
              break;
-          case ("S" || "s") 
+//          case ('S' || 's'): 
+            case 'S':
             if(FLAG == 0){
                  sendTxt(txtMessage2);
                  }
@@ -203,9 +212,15 @@ void loop() {
                  sendTxt(txtMessage1);
                  }
              break;
-           case ("H" || "h" || || "?"):
+//           case ('H' || 'h' || '?'):
+             case 'H':
              sendTxt(txtMessage5);
              break;
+//           case ('C' || 'c'):
+             case 'C':
+             sendTxt(txtMessage8);
+             sendTxt(txtMessage9);
+             break;  
            default:
              strcat(txtMessage, txtMessage6);
              sendTxt(txtMessage);
