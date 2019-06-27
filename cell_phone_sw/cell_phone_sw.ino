@@ -144,16 +144,6 @@ void loop() {
       Serial.print("Now enter test message content: ");
       readSerial(txtMessage);
       sendTxt(txtMessage);
-      if(FLAG == 0){
-         FLAG = 1;
-         digitalWrite(RELAY, HIGH);
-         sendTxt(txtMessage1);
-      }
-      else{
-         FLAG = 0;
-         digitalWrite(RELAY, LOW);
-         sendTxt(txtMessage2);
-      }
   }
   else{
       // If there are any SMSs available()
@@ -162,24 +152,28 @@ void loop() {
       // Any messages starting with # should be discarded
       if (sms.peek() == '#') {
          sms.flush();
-       }
-   }
-
-    // Read message bytes and print them if in debug mode
-    while ((c = sms.read()) != -1) {
-      if(debug){
-         Serial.print((char)c);
+         }
       }
-    }
-    
+      // Read message bytes and print them if in debug mode
+      while ((c = sms.read()) != -1) {
+        if(debug){
+           Serial.print((char)c);
+        }
+      }
+  }
     if ((txtMessage[0] != '9') || (txtMessage[1] != '5') || (txtMessage[2] != '3') || (txtMessage[3] != '6')){
        sendTxt(txtMessage4);
        }
     else{
        t = (int) txtMessage[4];
+// if t is less than 97 it is ASCII upper case. Adding 34 will change it to lower case ASCII       
+       if (t < 97){
+          t = t + 32;
+       }
+// switch case statements don't work with characters. It will generate a duplicate case error when compiled. 
+// charactes can be acessed as integers get placing single quotes around them.
        switch (t){
-//          case ('T' || 't'): 
-            case 'T':
+          case 't':
              if(FLAG == 0){
                 FLAG = 1;
                 digitalWrite(RELAY, HIGH);    
@@ -191,20 +185,17 @@ void loop() {
                 sendTxt(txtMessage2);
                 }
              break;
-//          case ('N' || 'n'):
-            case 'N':
+          case 'n':
              FLAG = 1;
              digitalWrite(RELAY, HIGH);    
              sendTxt(txtMessage1);
              break;
-//          case ('F' || 'f');
-            case 'F':
+          case 'f':
              FLAG = 0;
              digitalWrite(RELAY, LOW);
              sendTxt(txtMessage2);
              break;
-//          case ('S' || 's'): 
-            case 'S':
+          case 's':
             if(FLAG == 0){
                  sendTxt(txtMessage2);
                  }
@@ -212,12 +203,10 @@ void loop() {
                  sendTxt(txtMessage1);
                  }
              break;
-//           case ('H' || 'h' || '?'):
-             case 'H':
+           case 'h':
              sendTxt(txtMessage5);
              break;
-//           case ('C' || 'c'):
-             case 'C':
+           case 'c':
              sendTxt(txtMessage8);
              sendTxt(txtMessage9);
              break;  
@@ -230,6 +219,5 @@ void loop() {
      }
     // Delete message from modem memory
     sms.flush();
+    delay(1000);
   }
-  delay(1000);
-}
