@@ -32,16 +32,17 @@ char remoteNum[20];  // telephone number to send sms
 char txtMsg[200];
 bool debug = true;
 char txtMessage[200] = {};
-char txtMessage1[] = "Relay is on.";
-char txtMessage2[] = "Relay is off.";
+char txtMessage1[] = "Relay is off.";
+char txtMessage2[] = "Relay is on.";
 char txtMessage3[] = "Front panel button pressed. ";
-char txtMessage4[] = "Wrong PIN number DUMBASS!";
+char txtMessage4[] = "Wrong PIN number";
 char txtMessage5[] = "Available commands are: T/t (toggle), N/n (on), F/f (off), S/s (status), C/c (Change PIN), H/h (Help)";
-char txtMessage6[] = " is not a recognized command, DIPSHIT!";
+char txtMessage6[] = " is not a recognized command";
 char txtMessage7[] = "PIN can only be changed by the Master";
 char txtMessage8[] = "Enter new 4 digit PIN";
 char txtMessage9[] = "Reenter 4 digit PIN";
-char txtMessage10[] = "PINs do not match. Go Away!";
+char txtMessage10[] = "PINs do not match.";
+char txtMessage11[] = "Cell/router switch connected";
 
 int BUTTON = 0;
 int RELAY = 1;
@@ -73,45 +74,34 @@ int readSerial(char result[]) {
 }
 
 void sendTxt(char txtMsg[]){
-   if(debug){
-      Serial.println(txtMsg);
-   }
-   else{
       sms.beginSMS(senderNumber);
       sms.print(txtMsg);
       sms.endSMS();
-   } 
+      digitalWrite(RELAY, LOW);   
 }
 
 void setup() {
-  // initialize serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-
-  // connection state
   bool connected = false;
 
   // Start GSM shield
   // If your SIM has PIN, pass it as a parameter of begin() in quotes
-  while (!connected) {
-    if (gsmAccess.begin(PINNUMBER) == GSM_READY) {
-      connected = true;
-        if (debug){
-           Serial.println("Cnnected");
-        }   
-    } else {
-        if (debug){
-            Serial.println("Not connected");
-        }
-      delay(1000);
-    }
+  digitalWrite(RELAY, HIGH);
+  delay(2000);
+  digitalWrite(RELAY, LOW);
+  while (!connected){
+     if (gsmAccess.begin(PINNUMBER) == GSM_READY) {
+        connected = true;
+        strcat(txtMessage, txtMessage11);
+        sendTxt(txtMessage);
+        digitalWrite(RELAY, HIGH);
+        delay(2000);
+      }   
+     delay(1000);
   }
 
-  Serial.println("GSM initialized");
   pinMode(RELAY, OUTPUT);
   pinMode(BUTTON, INPUT);
+  // The relay is normally closed. The realy should default to closed (off). 
   digitalWrite(RELAY, LOW);
 }
 
@@ -125,7 +115,6 @@ void loop() {
     if(FLAG == 0){
        FLAG = 1;
        digitalWrite(RELAY, HIGH);
-//     txtMessage = txtMessage3 + txtMessage1;
        strcat(txtMessage, txtMessage3);
        strcat(txtMessage, txtMessage1);
        sendTxt(txtMessage);
@@ -133,18 +122,11 @@ void loop() {
     else{
       FLAG = 0;
       digitalWrite(RELAY, LOW);
-//    txtMessage = txtMessage3 + txtMessage2;
       strcat(txtMessage, txtMessage3);
       strcat(txtMessage, txtMessage2);
       sendTxt(txtMessage);
       }
   }  
-   
-  if (debug){
-      Serial.print("Now enter test message content: ");
-      readSerial(txtMessage);
-      sendTxt(txtMessage);
-  }
   else{
       // If there are any SMSs available()
       if (sms.available()) {   
@@ -155,10 +137,10 @@ void loop() {
          }
       }
       // Read message bytes and print them if in debug mode
-      while ((c = sms.read()) != -1) {
-        if(debug){
-           Serial.print((char)c);
-        }
+      i = 0;
+      while ((c = sms.read()) != -1){
+        txtMessage[i] = c;
+        i = i + 1;
       }
   }
     if ((txtMessage[0] != '9') || (txtMessage[1] != '5') || (txtMessage[2] != '3') || (txtMessage[3] != '6')){
@@ -187,12 +169,12 @@ void loop() {
              break;
           case 'n':
              FLAG = 1;
-             digitalWrite(RELAY, HIGH);    
+             digitalWrite(RELAY, LOW);    
              sendTxt(txtMessage1);
              break;
           case 'f':
              FLAG = 0;
-             digitalWrite(RELAY, LOW);
+             digitalWrite(RELAY, HIGH);
              sendTxt(txtMessage2);
              break;
           case 's':
