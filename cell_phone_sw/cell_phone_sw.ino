@@ -32,8 +32,8 @@ String txtMessage1 = "Relay is on.";
 String txtMessage2 = "Relay is off.";
 String txtMessage3 = "Front panel button pressed. ";
 String txtMessage4 = "Wrong PIN number.";
+String txtMessage5 = "Incorrect command format: nnnn c<enter>";
 String txtMessage6 = " is not a recognized command";
-String txtMessage10 = "PINs do not match.";
 
 int BUTTON = 0;
 int RELAY = 1;
@@ -56,10 +56,12 @@ void readFlush(){
  
 int readSerial() {
   numBytes = 0;
+  Serial1.println("in readSerial");
   while(Serial1.available()){
       txtMessage = Serial1.readString();
       numBytes++;
-   }    
+   }
+   Serial1.println("out of while loop");    
 }
 
 void sendTxt(String txtMsg){
@@ -71,9 +73,10 @@ void sendTxt(String txtMsg){
 
 void setup() {
   // initialize serial communications
-  Serial1.begin(9600);
+  Serial1.begin(2400);
+  while(!Serial1);
   Serial1.println("Debug port started");
-  Serial.setTimeout(5000);
+  Serial1.setTimeout(5000);
   // connection state
   bool connected = false;
 
@@ -116,8 +119,9 @@ void loop() {
   txtMessage = "";
   outMessage = "";
   readSerial();
-  if(numBytes > 0){
-     readFlush();
+  
+  if(numBytes == 6){
+//     readFlush();
      sendTxt(txtMessage);
      /* If there are any SMSs available()
          if (sms.available()) {   
@@ -138,25 +142,7 @@ void loop() {
          sendTxt(txtMessage4);
       }
       else{
-         t = txtMessage[5];
-      }
-      Serial1.print("command ");
-      Serial1.println(t);
-// switch case statements don't work with characters. It will generate a duplicate case error when compiled. 
-// charactes can be acessed as integers get placing single quotes around them.
-      
-          if (t == 't'){
-             if(FLAG == 0){
-                FLAG = 1;
-                digitalWrite(RELAY, HIGH);    
-                sendTxt(txtMessage1);
-                }
-             else{
-                FLAG = 0;
-                digitalWrite(RELAY, LOW);
-                sendTxt(txtMessage2);
-                }
-          }
+          t = txtMessage[5];
           if(t == 'n'){
              FLAG = 1;
              digitalWrite(RELAY, HIGH);    
@@ -175,21 +161,21 @@ void loop() {
                  sendTxt(txtMessage1);
                  }
           }
-          if (t == 'h'){
-             sendTxt(txtMessage5);
-          }
-          if(t == 'c'){
-             sendTxt(txtMessage8);
-             sendTxt(txtMessage9);
-          }
-          if((t != 't') && (t != 'n') && (t != 'f') && (t !='s') && (t !='h') && (t != 's') && (t !='h') && (t != 'c')){
+          if((t != 'n') && (t != 'f') && (t !='s')){
              outMessage = txtMessage + txtMessage6;
              sendTxt(outMessage);
-             sendTxt(txtMessage5);
           }
-     }
+     }  
+   }
+   else{
+       sendTxt(txtMessage5);
+   }    
+// switch case statements don't work with characters. It will generate a duplicate case error when compiled. 
+// charactes can be acessed as integers get placing single quotes around them.
+      
+
     // Delete message from modem memory
     // sms.flush();
-    readFlush();
+//    readFlush();
     delay(1000);
-  }
+}
