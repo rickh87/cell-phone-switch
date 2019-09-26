@@ -38,8 +38,7 @@ String txtMessage6 = " is not a recognized command";
 int BUTTON = 0;
 int RELAY = 1;
 int FLAG = 0;
-int numBytes = 0;
-char inChar;
+int numMessages = 0;
 
 // initialize the library instance
 //GSM gsmAccess;
@@ -55,20 +54,24 @@ void readFlush(){
 }
  
 int readSerial() {
-  numBytes = 0;
   Serial1.println("in readSerial");
-  while(Serial1.available()){
-      txtMessage = Serial1.readString();
-      numBytes++;
-   }
-   Serial1.println("out of while loop");    
+  delay(300);
+  while(Serial1.available() > 0){
+        char c = Serial1.read();
+        txtMessage += c;
+     }
+  Serial1.println(txtMessage);
+  Serial1.println("out of while loop");    
 }
 
 void sendTxt(String txtMsg){
-    Serial1.println(txtMsg);
-    //sms.beginSMS(senderNumber);
-    //sms.print(txtMsg);
-    //sms.endSMS(); 
+    if(numMessages < 100){
+       Serial1.println(txtMsg);
+       //sms.beginSMS(senderNumber);
+       //sms.print(txtMsg);
+       //sms.endSMS();
+       numMessages++;
+    }    
 }
 
 void setup() {
@@ -88,6 +91,7 @@ void setup() {
     delay(1000);
     }
   */
+  readFlush();
   pinMode(RELAY, OUTPUT);
   pinMode(BUTTON, INPUT);
   digitalWrite(RELAY, LOW);
@@ -115,13 +119,11 @@ void loop() {
        sendTxt(outMessage);
       } 
   }  
-  numBytes = 0;
-  txtMessage = "";
   outMessage = "";
   readSerial();
-  
-  if(numBytes == 6){
-//     readFlush();
+  Serial1.print("numBytes after readSerial = ");
+  Serial1.println(txtMessage.length());
+  if( txtMessage.length() == 7){
      sendTxt(txtMessage);
      /* If there are any SMSs available()
          if (sms.available()) {   
@@ -138,7 +140,9 @@ void loop() {
           }
      }
 */ 
-     if ((txtMessage[0] != '9') != (txtMessage[1] != '5') || (txtMessage[2] != '3') || (txtMessage[3] != '6')){
+//     if ((txtMessage[0] != '9') != (txtMessage[1] != '5') || (txtMessage[2] != '3') || (txtMessage[3] != '6')){
+      Serial1.println(txtMessage.substring(0,4));
+      if (txtMessage.substring(0,4) != "9536"){
          sendTxt(txtMessage4);
       }
       else{
@@ -161,21 +165,22 @@ void loop() {
                  sendTxt(txtMessage1);
                  }
           }
-          if((t != 'n') && (t != 'f') && (t !='s')){
+          if(t == 'r'){
+             numMessages = 0;
+          }
+          if((t != 'n') && (t != 'f') && (t !='s') && (t != 'r')){
              outMessage = txtMessage + txtMessage6;
              sendTxt(outMessage);
           }
-     }  
+      }  
    }
    else{
-       sendTxt(txtMessage5);
+      if(txtMessage.length() !=0 ){
+         sendTxt(txtMessage5);
+      }
    }    
-// switch case statements don't work with characters. It will generate a duplicate case error when compiled. 
-// charactes can be acessed as integers get placing single quotes around them.
-      
-
-    // Delete message from modem memory
-    // sms.flush();
-//    readFlush();
-    delay(1000);
+// Delete message from modem memory
+   // sms.flush();
+   txtMessage = "";
+   delay(5000);
 }
