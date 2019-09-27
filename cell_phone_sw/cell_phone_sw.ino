@@ -102,8 +102,8 @@ void loop() {
    
    // Read message bytes
    txtMessage = "";
-   while ((c = sms.read()) != -1) {
-      txtMessage++ =(char)c;
+   while ((c = sms.read()) != -1){
+       txtMessage += (char)c;
    }
        
    if( txtMessage.length() == 7){
@@ -124,11 +124,11 @@ void loop() {
           }
           if(t == 's'){
             if(FLAG == 0){
-                 outMessage = txtMessage1 + " number of messages sent: " + (String)numMessages);
+                 outMessage = txtMessage1 + " number of messages sent: " + (String)numMessages;
                  sendTxt(outMessage);
                  }
              else{
-                 outMessage = txtMessage2 + " number of messages sent: " + (String)numMessages
+                 outMessage = txtMessage2 + " number of messages sent: " + (String)numMessages;
                  sendTxt(txtMessage2);
                  }
           }
